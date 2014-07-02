@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
 import android.util.Log;
 import android.util.Xml;
 import android.view.LayoutInflater;
@@ -21,21 +22,26 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
+import android.widget.EditText;
 
 public class MainActivity extends Activity {
 
     public static final String TAG = "Volumer";
+    private EditText mVolume, mPips;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.volume_and_pips);
 
-        if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
-                    .commit();
-        }
+//        if (savedInstanceState == null) {
+//            getFragmentManager().beginTransaction()
+//                    .add(R.id.container, new PlaceholderFragment())
+//                    .commit();
+//        }
+
+        mVolume = (EditText) findViewById(R.id.editText_volume);
+        mPips = (EditText) findViewById(R.id.editText_pips);
         new DownloadDataTask().execute();
     }
 
@@ -60,6 +66,34 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void onVolumeDecClick(View view) {
+        dec(mVolume);
+    }
+
+    public void onVolumeIncClick(View view) {
+        inc(mVolume);
+    }
+
+    public void onPipsDecClick(View view) {
+        dec(mPips);
+    }
+
+    public void onPipsIncClick(View view) {
+        inc(mPips);
+    }
+
+    private void dec(EditText textField) {
+        Integer val = Integer.parseInt(textField.getText().toString());
+        if (val > 1) {
+            textField.setText(""+(val-1));
+        }
+    }
+
+    private void inc(EditText textField) {
+        Integer val = Integer.parseInt(textField.getText().toString());
+        textField.setText(""+(val+1));
+    }
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -74,6 +108,7 @@ public class MainActivity extends Activity {
             View rootView = inflater.inflate(R.layout.volume_and_pips, container, false);
             return rootView;
         }
+
     }
     
     
