@@ -5,4 +5,13 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <string-array name="markets_array">
+        <item>USDJPY</item>
+        <item>EURUSD</item>
+        <item>GBPUSD</item>
+        <item>EURJPY</item>
+        <item>AUDUSD</item>
+        <item>GBPJPY</item>
+        <item>USDPLN</item>
+    </string-array>
 </resources>
