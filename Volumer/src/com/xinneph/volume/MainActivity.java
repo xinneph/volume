@@ -33,7 +33,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.volume_and_pips);
+        setContentView(R.layout.volume_pips_relative);
 
 //        if (savedInstanceState == null) {
 //            getFragmentManager().beginTransaction()
