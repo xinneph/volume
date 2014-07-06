@@ -98,6 +98,15 @@
         android:layout_alignBaseline="@id/editText_pips"
         android:layout_toLeftOf="@id/button_pips_dec" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="0,00"
+        android:id="@+id/textView_balance"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:padding="@dimen/activity_horizontal_margin" />
 
 
 </RelativeLayout>

@@ -4,6 +4,10 @@
     <string name="app_name">Volumer</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="action_balance">Balance</string>
+    <string name="change_balance">Change balance</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 
     <string-array name="markets_array">
         <item>USDJPY</item>

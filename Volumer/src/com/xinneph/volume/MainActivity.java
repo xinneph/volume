@@ -1,7 +1,9 @@
 package com.xinneph.volume;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.Fragment;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -24,10 +27,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements BalanceChangeListener {
 
     public static final String TAG = "Volumer";
+    private static final String DATA = "SharedPrefsData";
+    private static final String DATA_BALANCE = "data_balance";
     private EditText mVolume, mPips;
+    private TextView mBalance;
     private Spinner mMarkets;
     
     @Override
@@ -49,6 +55,12 @@ public class MainActivity extends Activity {
                 R.array.markets_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mMarkets.setAdapter(adapter);
+
+        mBalance = (TextView) findViewById(R.id.textView_balance);
+
+        SharedPreferences prefs = getSharedPreferences(DATA, 0);
+        int balance = prefs.getInt(DATA_BALANCE, 0);
+        mBalance.setText(Integer.toString(balance));
     }
 
 
@@ -69,7 +81,23 @@ public class MainActivity extends Activity {
         if (id == R.id.action_settings) {
             return true;
         }
+        else if (id == R.id.action_balance) {
+            SharedPreferences prefs = getSharedPreferences(DATA, 0);
+            int balance = prefs.getInt(DATA_BALANCE, 1);
+            DialogFragment dialog = new BalanceDialogFragment();
+            Bundle args = new Bundle();
+            args.putInt(BalanceDialogFragment.ARG_BALANCE, balance);
+            dialog.setArguments(args);
+            dialog.show(getFragmentManager(), "BalanceChangeDialog");
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBalanceChange(int balance) {
+        SharedPreferences prefs = getSharedPreferences(DATA, 0);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(DATA_BALANCE, balance);
     }
 
     public void onVolumeDecClick(View view) {
