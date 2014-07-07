@@ -8,8 +8,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.EditText;
 
 /**
@@ -35,28 +33,25 @@ public class BalanceDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage(R.string.change_balance)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                    }
-                });
-        Dialog dialog = builder.create();
-        dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        return dialog;
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        final View layout = inflater.inflate(R.layout.balance_dialog, null);
+        builder.setView(layout).setTitle(R.string.change_balance)
+            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    EditText text = (EditText) layout.findViewById(R.id.editText_balance);
+                    int balance = Integer.parseInt(text.getText().toString());
+                    mListener.onBalanceChange(balance);
+                }
+            })
+            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                }
+            });
+        EditText text = (EditText) layout.findViewById(R.id.editText_balance);
+        int balance = getArguments().getInt(ARG_BALANCE);
+        text.setText(""+balance);
+        return builder.create();
     }
-
-//    @Override
-//    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//        View v = inflater.inflate(R.layout.balance_dialog, container, false);
-////        EditText et = (EditText) v.findViewById(R.id.editText_balance);
-////        int balance = getArguments().getInt(ARG_BALANCE, 2);
-////        et.setText(balance);
-//        return v;
-//    }
 }

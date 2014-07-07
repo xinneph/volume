@@ -83,7 +83,7 @@ public class MainActivity extends Activity implements BalanceChangeListener {
         }
         else if (id == R.id.action_balance) {
             SharedPreferences prefs = getSharedPreferences(DATA, 0);
-            int balance = prefs.getInt(DATA_BALANCE, 1);
+            int balance = prefs.getInt(DATA_BALANCE, 0);
             DialogFragment dialog = new BalanceDialogFragment();
             Bundle args = new Bundle();
             args.putInt(BalanceDialogFragment.ARG_BALANCE, balance);
@@ -98,6 +98,8 @@ public class MainActivity extends Activity implements BalanceChangeListener {
         SharedPreferences prefs = getSharedPreferences(DATA, 0);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(DATA_BALANCE, balance);
+        editor.commit();
+        mBalance.setText(""+balance);
     }
 
     public void onVolumeDecClick(View view) {
