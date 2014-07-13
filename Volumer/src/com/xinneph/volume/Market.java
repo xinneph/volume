@@ -14,8 +14,8 @@ public class Market {
 
     /** Private constructor - no other Market class instance can be created outside of this class. */
     private Market(String name, float onePip) {
-        if (name.length() != 6) {
-            throw new IllegalArgumentException("Market name should be exactly 6 characters long.");
+        if (name.length() != 3) {
+            throw new IllegalArgumentException("Market name should be exactly 3 characters long.");
         }
         if (onePip <= 0) {
             throw new IllegalArgumentException("One pip value should be greater then 0.");
@@ -29,12 +29,8 @@ public class Market {
         return name;
     }
 
-    public String getBase() {
-        return name.substring(0, 3);
-    }
-
     public String getQuote() {
-        return name.substring(3, 6);
+        return name.substring(0, 3);
     }
 
     public float getOnePip() {
@@ -43,12 +39,12 @@ public class Market {
 
     public static final Map<String,Market> markets = new HashMap<String,Market>();
     static {
-        markets.put("USDJPY", new Market("USDJPY", 10));
-        markets.put("EURJPY", new Market("EURJPY", 10));
-        markets.put("EURUSD", new Market("EURUSD", 0.1f));
-        markets.put("GBPUSD", new Market("GBPUSD", 0.1f));
-        markets.put("AUDUSD", new Market("AUDUSD", 0.1f));
-        markets.put("GBPJPY", new Market("GBPJPY", 10));
-        markets.put("USDPLN", new Market("USDPLN", 0.1f));
+        markets.put("JPY", new Market("JPY", 10));
+        markets.put("USD", new Market("USD", 0.1f));
+        markets.put("GBP", new Market("GBP", 0.1f));
+        markets.put("CHF", new Market("CHF", 0.1f));
+        markets.put("NZD", new Market("NZD", 0.1f));
+        markets.put("PLN", new Market("PLN", 0.1f));
+        markets.put("CAD", new Market("CAD", 0.1f));
     }
 }
