@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,24 +39,32 @@ public class MainActivity extends Activity implements BalanceChangeListener {
     private EditText mVolume, mPips;
     private TextView mBalance;
     private Spinner mMarkets;
-    private ArrayAdapter mMarketsSpinnerAdapter;
+    private ArrayAdapter<Market> mMarketsSpinnerAdapter;
     private TextView mPercent, mRisk;
-
     private Map<String,ExchangeRate> mExchangeRates;
+
+    private TextWatcher mWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+            // nothing
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+            // nothing
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            Market selected = (Market) mMarkets.getSelectedItem();
+            updateRisk(selected);
+        }
+    };
+
     private OnItemSelectedListener mOnItemSelected = new OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-            Market selected = (Market) adapterView.getSelectedItem();
-            ExchangeRate rate = mExchangeRates.get(selected.getQuote());
-            float course = rate.getCourse();
-            int ratio = rate.getRatio();
-            int pips = Integer.parseInt(mPips.getText().toString());
-            int volume = Integer.parseInt(mVolume.getText().toString());
-            float howMuch = selected.getOnePip() * pips * volume * course / ratio;
-            mRisk.setText(""+howMuch);
-            float balance = Float.parseFloat(mBalance.getText().toString());
-            float percent = howMuch / balance;
-            mPercent.setText(""+percent);
+            updateRisk((Market)adapterView.getSelectedItem());
         }
 
         @Override
@@ -82,20 +92,34 @@ public class MainActivity extends Activity implements BalanceChangeListener {
         int balance = prefs.getInt(DATA_BALANCE, 0);
         mBalance.setText(Integer.toString(balance));
 
-        mMarketsSpinnerAdapter = new ArrayAdapter(MainActivity.this,
+        mMarketsSpinnerAdapter = new ArrayAdapter<Market>(MainActivity.this,
                 android.R.layout.simple_spinner_item,
                 new ArrayList<Market>(Market.markets.values()));
         mMarketsSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         super.onDestroy();
         SharedPreferences prefs = getSharedPreferences(DATA, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(DATA_VOLUME, mVolume.getText().toString());
         editor.putString(DATA_PIPS, mPips.getText().toString());
-        editor.commit();
+        editor.apply();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mVolume.addTextChangedListener(mWatcher);
+        mPips.addTextChangedListener(mWatcher);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mVolume.removeTextChangedListener(mWatcher);
+        mPips.removeTextChangedListener(mWatcher);
     }
 
     @Override
@@ -212,7 +236,25 @@ public class MainActivity extends Activity implements BalanceChangeListener {
             mExchangeRates = rates;
             mMarkets.setAdapter(mMarketsSpinnerAdapter);
             mMarkets.setOnItemSelectedListener(mOnItemSelected);
-//            updateRisk();
+        }
+    }
+
+    private void updateRisk(Market market) {
+        ExchangeRate rate = mExchangeRates.get(market.getQuote());
+        float course = rate.getCourse();
+        int ratio = rate.getRatio();
+        String pipsStr = mPips.getText().toString();
+        String volumeStr = mVolume.getText().toString();
+        if (!pipsStr.isEmpty() && !volumeStr.isEmpty()) {
+            int pips = Integer.parseInt(pipsStr);
+            int volume = Integer.parseInt(volumeStr);
+            float howMuch = market.getOnePip() * pips * volume * course / ratio;
+            String strHowMuch = String.format("%.2f", howMuch);
+            mRisk.setText(strHowMuch);
+            float balance = Float.parseFloat(mBalance.getText().toString());
+            float percent = howMuch / balance * 100;
+            String strPercent = String.format("%.2f", percent);
+            mPercent.setText(strPercent);
         }
     }
 }

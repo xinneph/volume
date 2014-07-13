@@ -49,6 +49,6 @@ public class Market {
         markets.put("GBPUSD", new Market("GBPUSD", 0.1f));
         markets.put("AUDUSD", new Market("AUDUSD", 0.1f));
         markets.put("GBPJPY", new Market("GBPJPY", 10));
-//        markets.put("USDPLN", new Market("USDPLN", 0.1f));
+        markets.put("USDPLN", new Market("USDPLN", 0.1f));
     }
 }
