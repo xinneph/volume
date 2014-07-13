@@ -60,12 +60,6 @@ public class MainActivity extends Activity implements BalanceChangeListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.volume_pips_relative);
 
-//        if (savedInstanceState == null) {
-//            getFragmentManager().beginTransaction()
-//                    .add(R.id.container, new PlaceholderFragment())
-//                    .commit();
-//        }
-
         mVolume = (EditText) findViewById(R.id.editText_volume);
         mPips = (EditText) findViewById(R.id.editText_pips);
 
