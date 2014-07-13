@@ -3,22 +3,24 @@ package com.xinneph.volume;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Xml;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -26,6 +28,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends Activity implements BalanceChangeListener {
@@ -33,10 +37,29 @@ public class MainActivity extends Activity implements BalanceChangeListener {
     public static final String TAG = "Volumer";
     private static final String DATA = "SharedPrefsData";
     private static final String DATA_BALANCE = "data_balance";
+    private static final String DATA_VOLUME = "data_volume";
+    private static final String DATA_PIPS = "data_pips";
     private EditText mVolume, mPips;
     private TextView mBalance;
     private Spinner mMarkets;
-    
+    private ArrayAdapter mMarketsSpinnerAdapter;
+
+    private Map<String,ExchangeRate> mExchangeRates;
+    private OnItemSelectedListener mOnItemSelected = new OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            Market selected = (Market) adapterView.getSelectedItem();
+            ExchangeRate rate = mExchangeRates.get(selected.getQuote());
+            float course = rate.getCourse();
+            int ratio = rate.getRatio();
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,26 +73,37 @@ public class MainActivity extends Activity implements BalanceChangeListener {
 
         mVolume = (EditText) findViewById(R.id.editText_volume);
         mPips = (EditText) findViewById(R.id.editText_pips);
-//        new DownloadDataTask().execute();
+
+        SharedPreferences prefs = getSharedPreferences(DATA, Context.MODE_PRIVATE);
+        mVolume.setText(prefs.getString(DATA_VOLUME, "0"));
+        mPips.setText(prefs.getString(DATA_PIPS, "0"));
+
+
         mMarkets = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.markets_array, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mMarkets.setAdapter(adapter);
+        mMarketsSpinnerAdapter = new ArrayAdapter(MainActivity.this,
+                android.R.layout.simple_spinner_item,
+                new ArrayList<Market>(Market.markets.values()));
+        mMarketsSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mBalance = (TextView) findViewById(R.id.textView_balance);
-
-        SharedPreferences prefs = getSharedPreferences(DATA, 0);
         int balance = prefs.getInt(DATA_BALANCE, 0);
         mBalance.setText(Integer.toString(balance));
 
         new DownloadDataTask().execute();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        SharedPreferences prefs = getSharedPreferences(DATA, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(DATA_VOLUME, mVolume.getText().toString());
+        editor.putString(DATA_PIPS, mPips.getText().toString());
+        editor.commit();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
@@ -136,24 +170,24 @@ public class MainActivity extends Activity implements BalanceChangeListener {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.volume_and_pips, container, false);
-            return rootView;
-        }
-
-    }
+//    public static class PlaceholderFragment extends Fragment {
+//
+//        public PlaceholderFragment() {
+//        }
+//
+//        @Override
+//        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+//                Bundle savedInstanceState) {
+//            View rootView = inflater.inflate(R.layout.volume_and_pips, container, false);
+//            return rootView;
+//        }
+//
+//    }
     
     
-    public class DownloadDataTask extends AsyncTask<Void,Void,String> {
+    public class DownloadDataTask extends AsyncTask<Void,Void,Map<String,ExchangeRate>> {
         @Override
-        protected String doInBackground(Void...voids) {
+        protected Map<String,ExchangeRate> doInBackground(Void...voids) {
             String nbpWebsite = "http://nbp.pl/link/kursy/tabela-a";
             try {
                 InputStream stream = getWebsiteContent(nbpWebsite);
@@ -167,8 +201,9 @@ public class MainActivity extends Activity implements BalanceChangeListener {
                 stream = getWebsiteContent(xmlPath);
                 ExchangeRateParser xdp = new ExchangeRateParser();
                 Map<String, ExchangeRate> rates = xdp.parse(stream);
+                rates.put("PLN", ExchangeRate.PLN);
                 stream.close();
-                return xmlPath;
+                return rates;
             }
             catch (MalformedURLException e) {
                 Log.e(TAG, "wrong url given", e);
@@ -195,13 +230,11 @@ public class MainActivity extends Activity implements BalanceChangeListener {
         }
         
         @Override
-        protected void onPostExecute(String result) {
-//            setContentView(R.layout.web);
-//            WebView webView = (WebView) findViewById(R.id.webView);
-//            webView.loadData(result, "text/html", null);
+        protected void onPostExecute(Map<String,ExchangeRate> rates) {
+            mExchangeRates = rates;
+            mMarkets.setAdapter(mMarketsSpinnerAdapter);
+            mMarkets.setOnItemSelectedListener(mOnItemSelected);
+//            updateRisk();
         }
-        
     }
-    
-
 }

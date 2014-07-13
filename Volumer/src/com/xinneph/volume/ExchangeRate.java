@@ -37,4 +37,6 @@ public class ExchangeRate {
     public float getCourse() {
         return mCourse;
     }
+
+    public static final ExchangeRate PLN = new ExchangeRate(1, "PLN", 1.0f);
 }
