@@ -38,6 +38,7 @@ public class MainActivity extends Activity implements BalanceChangeListener {
     private TextView mBalance;
     private Spinner mMarkets;
     private ArrayAdapter mMarketsSpinnerAdapter;
+    private TextView mPercent, mRisk;
 
     private Map<String,ExchangeRate> mExchangeRates;
     private OnItemSelectedListener mOnItemSelected = new OnItemSelectedListener() {
@@ -47,6 +48,13 @@ public class MainActivity extends Activity implements BalanceChangeListener {
             ExchangeRate rate = mExchangeRates.get(selected.getQuote());
             float course = rate.getCourse();
             int ratio = rate.getRatio();
+            int pips = Integer.parseInt(mPips.getText().toString());
+            int volume = Integer.parseInt(mVolume.getText().toString());
+            float howMuch = selected.getOnePip() * pips * volume * course / ratio;
+            mRisk.setText(""+howMuch);
+            float balance = Float.parseFloat(mBalance.getText().toString());
+            float percent = howMuch / balance;
+            mPercent.setText(""+percent);
         }
 
         @Override
@@ -58,27 +66,26 @@ public class MainActivity extends Activity implements BalanceChangeListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        new DownloadDataTask().execute();
         setContentView(R.layout.volume_pips_relative);
 
         mVolume = (EditText) findViewById(R.id.editText_volume);
         mPips = (EditText) findViewById(R.id.editText_pips);
+        mMarkets = (Spinner) findViewById(R.id.spinner);
+        mBalance = (TextView) findViewById(R.id.textView_balance);
+        mPercent = (TextView) findViewById(R.id.textView_percent);
+        mRisk = (TextView) findViewById(R.id.textView_risk);
 
         SharedPreferences prefs = getSharedPreferences(DATA, Context.MODE_PRIVATE);
         mVolume.setText(prefs.getString(DATA_VOLUME, "0"));
         mPips.setText(prefs.getString(DATA_PIPS, "0"));
+        int balance = prefs.getInt(DATA_BALANCE, 0);
+        mBalance.setText(Integer.toString(balance));
 
-
-        mMarkets = (Spinner) findViewById(R.id.spinner);
         mMarketsSpinnerAdapter = new ArrayAdapter(MainActivity.this,
                 android.R.layout.simple_spinner_item,
                 new ArrayList<Market>(Market.markets.values()));
         mMarketsSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        mBalance = (TextView) findViewById(R.id.textView_balance);
-        int balance = prefs.getInt(DATA_BALANCE, 0);
-        mBalance.setText(Integer.toString(balance));
-
-        new DownloadDataTask().execute();
     }
 
     @Override

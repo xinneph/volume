@@ -37,6 +37,10 @@ public class Market {
         return name.substring(3, 6);
     }
 
+    public float getOnePip() {
+        return onePip;
+    }
+
     public static final Map<String,Market> markets = new HashMap<String,Market>();
     static {
         markets.put("USDJPY", new Market("USDJPY", 10));
